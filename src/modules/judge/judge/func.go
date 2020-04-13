@@ -19,12 +19,16 @@ type MaxFunction struct {
 }
 
 func (this MaxFunction) Compute(vs []*dataobj.RRDData) (leftValue dataobj.JsonFloat, isTriggered bool) {
-	if len(vs) < this.Limit {
+	if float64(len(vs)) < float64(this.Limit)*0.7 {
 		return
 	}
 
 	max := vs[0].Value
-	for i := 1; i < this.Limit; i++ {
+	lenght := this.Limit
+	if len(vs) < this.Limit {
+		lenght = len(vs)
+	}
+	for i := 1; i < lenght; i++ {
 		if max < vs[i].Value {
 			max = vs[i].Value
 		}
@@ -43,12 +47,16 @@ type MinFunction struct {
 }
 
 func (this MinFunction) Compute(vs []*dataobj.RRDData) (leftValue dataobj.JsonFloat, isTriggered bool) {
-	if len(vs) < this.Limit {
+	if float64(len(vs)) < float64(this.Limit)*0.7 {
 		return
 	}
 
 	min := vs[0].Value
-	for i := 1; i < this.Limit; i++ {
+	lenght := this.Limit
+	if len(vs) < this.Limit {
+		lenght = len(vs)
+	}
+	for i := 1; i < lenght; i++ {
 		if min > vs[i].Value {
 			min = vs[i].Value
 		}
@@ -67,12 +75,16 @@ type AllFunction struct {
 }
 
 func (this AllFunction) Compute(vs []*dataobj.RRDData) (leftValue dataobj.JsonFloat, isTriggered bool) {
-	if len(vs) < this.Limit {
+	if float64(len(vs)) < float64(this.Limit)*0.7 {
 		return
 	}
 
 	isTriggered = true
-	for i := 0; i < this.Limit; i++ {
+	lenght := this.Limit
+	if len(vs) < this.Limit {
+		lenght = len(vs)
+	}
+	for i := 0; i < lenght; i++ {
 		isTriggered = checkIsTriggered(vs[i].Value, this.Operator, this.RightValue)
 		if !isTriggered {
 			break
@@ -91,12 +103,16 @@ type SumFunction struct {
 }
 
 func (this SumFunction) Compute(vs []*dataobj.RRDData) (leftValue dataobj.JsonFloat, isTriggered bool) {
-	if len(vs) < this.Limit {
+	if float64(len(vs)) < float64(this.Limit)*0.7 {
 		return
 	}
 
 	sum := dataobj.JsonFloat(0.0)
-	for i := 0; i < this.Limit; i++ {
+	lenght := this.Limit
+	if len(vs) < this.Limit {
+		lenght = len(vs)
+	}
+	for i := 0; i < lenght; i++ {
 		sum += vs[i].Value
 	}
 
@@ -113,16 +129,20 @@ type AvgFunction struct {
 }
 
 func (this AvgFunction) Compute(vs []*dataobj.RRDData) (leftValue dataobj.JsonFloat, isTriggered bool) {
-	if len(vs) < this.Limit {
+	if float64(len(vs)) < float64(this.Limit)*0.7 {
 		return
 	}
 
 	sum := dataobj.JsonFloat(0.0)
-	for i := 0; i < this.Limit; i++ {
+	lenght := this.Limit
+	if len(vs) < this.Limit {
+		lenght = len(vs)
+	}
+	for i := 0; i < lenght; i++ {
 		sum += vs[i].Value
 	}
 
-	leftValue = sum / dataobj.JsonFloat(this.Limit)
+	leftValue = sum / dataobj.JsonFloat(lenght)
 	isTriggered = checkIsTriggered(leftValue, this.Operator, this.RightValue)
 	return
 }
@@ -136,14 +156,18 @@ type DiffFunction struct {
 
 // 只要有一个点的diff触发阈值，就报警
 func (this DiffFunction) Compute(vs []*dataobj.RRDData) (leftValue dataobj.JsonFloat, isTriggered bool) {
-	if len(vs) < this.Limit {
+	if float64(len(vs)) < float64(this.Limit)*0.7 {
 		return
 	}
 
 	first := vs[0].Value
+	lenght := this.Limit
+	if len(vs) < this.Limit {
+		lenght = len(vs)
+	}
 
 	isTriggered = false
-	for i := 1; i < this.Limit; i++ {
+	for i := 1; i < lenght; i++ {
 		// diff是当前值减去历史值
 		leftValue = first - vs[i].Value
 		isTriggered = checkIsTriggered(leftValue, this.Operator, this.RightValue)
@@ -164,13 +188,17 @@ type PDiffFunction struct {
 }
 
 func (this PDiffFunction) Compute(vs []*dataobj.RRDData) (leftValue dataobj.JsonFloat, isTriggered bool) {
-	if len(vs) < this.Limit {
+	if float64(len(vs)) < float64(this.Limit)*0.7 {
 		return
 	}
 
 	first := vs[0].Value
+	lenght := this.Limit
+	if len(vs) < this.Limit {
+		lenght = len(vs)
+	}
 	isTriggered = false
-	for i := 1; i < this.Limit; i++ {
+	for i := 1; i < lenght; i++ {
 		if vs[i].Value == 0 {
 			continue
 		}
