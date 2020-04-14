@@ -35,12 +35,11 @@ func Push(metricItems []*dataobj.MetricValue) error {
 		}
 		if item.CounterType == dataobj.COUNTER {
 			if err := CounterToGauge(item); err != nil {
-				//旧值不存在则不推送
 				logger.Warning(err)
 				continue
 			}
 		}
-
+		logger.Debug("push item: ", item)
 		items = append(items, item)
 	}
 
