@@ -196,6 +196,18 @@ func popEvent(queues []interface{}) (*model.Event, bool) {
 			return event, true
 		}
 	} else {
+		if stra.RecoveryDur > 0 {
+			eventCur, err := model.EventCurGet("hashid", event.HashId)
+			if err != nil {
+				stats.Counter.Set("event.cur.get.err", 1)
+				logger.Errorf("get event cur failed, err: %v, event: %v", err, event)
+				return event, true
+			}
+			if event.Etime-eventCur.Etime < int64(stra.RecoveryDur) {
+				logger.Debugf("recovery duration has not reached, event: %v", event)
+				return event, true
+			}
+		}
 		err = model.EventCurDel(event.HashId)
 		if err != nil {
 			stats.Counter.Set("event.cur.del.err", 1)
