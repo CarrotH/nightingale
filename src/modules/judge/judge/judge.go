@@ -109,7 +109,7 @@ func Judge(stra *model.Stra, exps []model.Exp, historyData []*dataobj.RRDData, f
 				Hashid:    getHashId(stra.Id, firstItem),
 			}
 
-			sendEventIfNeed(historyData, status, event)
+			sendEventIfNeed(historyData, status, event, stra)
 		}
 	}()
 
@@ -388,7 +388,7 @@ func GetReqs(stra *model.Stra, metric string, endpoints []string, now int64) ([]
 	return reqs, nil
 }
 
-func sendEventIfNeed(historyData []*dataobj.RRDData, status []bool, event *dataobj.Event) {
+func sendEventIfNeed(historyData []*dataobj.RRDData, status []bool, event *dataobj.Event, stra *model.Stra) {
 	isTriggered := true
 	for _, s := range status {
 		isTriggered = isTriggered && s
@@ -414,11 +414,6 @@ func sendEventIfNeed(historyData []*dataobj.RRDData, status []bool, event *datao
 	} else {
 		// 如果LastEvent是Problem，报OK，否则啥都不做
 		if exists && lastEvent.EventType[0] == 'a' {
-			stra, exists := cache.Strategy.Get(event.Sid)
-			if !exists {
-				stats.Counter.Set("stra.miss", 1)
-				return
-			}
 			if stra.RecoveryDur > 0 && event.Etime-lastEvent.Etime < int64(stra.RecoveryDur) {
 				return
 			}
