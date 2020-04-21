@@ -109,6 +109,7 @@ func Judge(stra *model.Stra, exps []model.Exp, historyData []*dataobj.RRDData, f
 				Sid:       stra.Id,
 				Hashid:    getHashId(stra.Id, firstItem),
 			}
+
 			sendEventIfNeed(historyData, status, event, stra.RecoveryDur)
 		}
 	}()
