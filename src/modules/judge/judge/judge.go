@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/didi/nightingale/src/dataobj"
 	"github.com/didi/nightingale/src/model"
@@ -95,7 +96,7 @@ func Judge(stra *model.Stra, exps []model.Exp, historyData []*dataobj.RRDData, f
 		if len(exps) == 1 {
 			bs, err := json.Marshal(history)
 			if err != nil {
-				logger.Error("Marshal history:%v err:%v", history, err)
+				logger.Errorf("Marshal history:%v err:%v", history, err)
 			}
 			event := &dataobj.Event{
 				ID:        fmt.Sprintf("s_%d_%s", stra.Id, firstItem.PrimaryKey()),
@@ -108,8 +109,7 @@ func Judge(stra *model.Stra, exps []model.Exp, historyData []*dataobj.RRDData, f
 				Sid:       stra.Id,
 				Hashid:    getHashId(stra.Id, firstItem),
 			}
-
-			sendEventIfNeed(historyData, status, event, stra)
+			sendEventIfNeed(historyData, status, event, stra.RecoveryDur)
 		}
 	}()
 
@@ -388,7 +388,7 @@ func GetReqs(stra *model.Stra, metric string, endpoints []string, now int64) ([]
 	return reqs, nil
 }
 
-func sendEventIfNeed(historyData []*dataobj.RRDData, status []bool, event *dataobj.Event, stra *model.Stra) {
+func sendEventIfNeed(historyData []*dataobj.RRDData, status []bool, event *dataobj.Event, recoveryDur int) {
 	isTriggered := true
 	for _, s := range status {
 		isTriggered = isTriggered && s
@@ -414,7 +414,8 @@ func sendEventIfNeed(historyData []*dataobj.RRDData, status []bool, event *datao
 	} else {
 		// 如果LastEvent是Problem，报OK，否则啥都不做
 		if exists && lastEvent.EventType[0] == 'a' {
-			if stra.RecoveryDur > 0 && event.Etime-lastEvent.Etime < int64(stra.RecoveryDur) {
+			// 如果配置了留观时长，则距离上一次故障时间要大于等于recoveryDur，才产生恢复事件
+			if time.Now().Unix()-lastEvent.Etime < int64(recoveryDur) {
 				return
 			}
 
