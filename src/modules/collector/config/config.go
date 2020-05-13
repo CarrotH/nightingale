@@ -69,14 +69,15 @@ func Parse(conf string) error {
 	})
 
 	viper.SetDefault("sys", map[string]interface{}{
-		"timeout":  1000, //请求超时时间
-		"interval": 10,   //基础指标上报周期
-		"plugin":   "./plugin",
+		"timeout":      1000, //请求超时时间
+		"interval":     10,   //基础指标上报周期
+		"pluginRemote": true, //从monapi获取插件采集配置
+		"plugin":       "./plugin",
 	})
 
 	err = viper.Unmarshal(&Config)
 	if err != nil {
-		return fmt.Errorf("Unmarshal %v", err)
+		return fmt.Errorf("unmarshal config error:%v", err)
 	}
 
 	return nil
