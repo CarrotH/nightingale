@@ -357,8 +357,8 @@ func convert2InfluxdbItem(d *dataobj.MetricValue) *dataobj.InfluxdbItem {
 		t.Tags[k] = v
 	}
 	t.Tags["endpoint"] = d.Endpoint
-	t.Measurement = d.Metric
-	t.Fields["value"] = d.Value
+	t.Measurement = d.Measurement
+	t.Fields[d.Metric] = d.Value
 	t.Timestamp = d.Timestamp
 
 	return &t

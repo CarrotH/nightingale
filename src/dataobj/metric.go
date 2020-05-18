@@ -27,6 +27,7 @@ type MetricValue struct {
 	Tags         string            `json:"tags"`
 	TagsMap      map[string]string `json:"tagsMap"` //保留2种格式，方便后端组件使用
 	Extra        string            `json:"extra"`
+	Measurement  string            `json:"measurement"`
 }
 
 var bufferPool = sync.Pool{
@@ -127,6 +128,10 @@ func (m *MetricValue) CheckValidity(now int64) (err error) {
 
 	if m.Timestamp <= 0 {
 		m.Timestamp = now
+	}
+
+	if m.Measurement == "" {
+		m.Measurement = m.Metric
 	}
 
 	valid := true
